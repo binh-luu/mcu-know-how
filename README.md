@@ -1,8 +1,7 @@
 # MCU Knowledge Base
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![STMicroelectronics](https://img.shields.io/badge/MCU-STM32F407G--DISC1-blue)](https://www.st.com/en/evaluation-tools/stm32f4discovery.html)
-[![Infineon](https://img.shields.io/badge/MCU-KIT--T2G--B--H--LITE-green)](https://www.infineon.com/traveo2)
+[![STMicroelectronics](https://img.shields.io/badge/MCU-STM32F4-blue)](https://www.st.com/en/evaluation-tools/stm32f4discovery.html)
+[![Infineon](https://img.shields.io/badge/MCU-TRAVEO%E2%84%A2%20T2G-green)](https://www.infineon.com/traveo2)
 
 ## Overview
 
@@ -30,7 +29,6 @@ It serves as a quick-start guide for developers, students, and engineers working
   - [STM32F407G-DISC1 Tools](#stm32f407g-disc1-tools)
   - [KIT-T2G-B-H-LITE Tools](#kit-t2g-b-h-lite-tools)
 - [Technical Resources](#technical-resources)
-- [License](#license)
 
 ---
 
@@ -120,12 +118,6 @@ The **KIT-T2G-B-H-LITE** is a cost-effective evaluation board for the **Infineon
 - [Traveo II Family Overview](https://www.infineon.com/traveo2)  
 - [ModusToolbox Software Portal](https://www.infineon.com/modustoolbox)  
 - [Traveo II Reference Manual & Application Notes](https://www.infineon.com/cms/en/design-support/tools/)  
-
----
-
-## License
-
-This repository is licensed under the [MIT License](LICENSE).
 
 ---
 
