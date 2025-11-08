@@ -3,6 +3,19 @@
 [![STMicroelectronics](https://img.shields.io/badge/MCU-STM32F4-blue)](https://www.st.com/en/evaluation-tools/stm32f4discovery.html)
 [![Infineon](https://img.shields.io/badge/MCU-TRAVEO%E2%84%A2%20T2G-green)](https://www.infineon.com/traveo2)
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Hardware Kits](#hardware-kits)
+  - [STM32F407G-DISC1](#stm32f407g-disc1)
+  - [KIT-T2G-B-H-LITE](#kit-t2g-b-h-lite)
+- [Software Tools](#software-tools)
+  - [STM32F407G-DISC1 Tools](#stm32f407g-disc1-tools)
+  - [KIT-T2G-B-H-LITE Tools](#kit-t2g-b-h-lite-tools)
+- [Technical Resources](#technical-resources)
+
+---
+
 ## Overview
 
 This repository provides a **knowledge base** for learning and developing with **microcontroller units (MCUs)** using two popular hardware platforms:
@@ -16,19 +29,6 @@ The document covers:
 - Reference documentation and resources  
 
 It serves as a quick-start guide for developers, students, and engineers working on embedded systems, automotive, or industrial applications.
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Hardware Kits](#hardware-kits)
-  - [STM32F407G-DISC1](#stm32f407g-disc1)
-  - [KIT-T2G-B-H-LITE](#kit-t2g-b-h-lite)
-- [Software Tools](#software-tools)
-  - [STM32F407G-DISC1 Tools](#stm32f407g-disc1-tools)
-  - [KIT-T2G-B-H-LITE Tools](#kit-t2g-b-h-lite-tools)
-- [Technical Resources](#technical-resources)
 
 ---
 
