@@ -1,0 +1,10 @@
+# Claude settings (overwritten Anthropic)
+export ANTHROPIC_BASE_URL=""https://openrouter.ai/api"
+export ANTHROPIC_AUTH_TOKEN="api-key-here"
+export ANTHROPIC_API_KEY=""
+export ANTHROPIC_MODEL="openrouter/free"
+export ANTHROPIC_DEFAULT_SONNET_MODEL="openrouter/free"
+export ANTHROPIC_DEFAULT_OPUS_MODEL="openrouter/free"
+export ANTHROPIC_DEFAULT_HAIKU_MODEL="openrouter/free"
+export ANTHROPIC_SMALL_FAST_MODEL="openrouter/free"
+export CLAUDE_CODE_SUBAGENT_MODEL="openrouter/free"

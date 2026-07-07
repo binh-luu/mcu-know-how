@@ -1,0 +1,19 @@
+model_list:
+  - model_name: fpt-claude-main
+    litellm_params:
+      model: openai/Qwen3.6-27B
+      api_base: https://mkp-api.fptcloud.com
+      api_key: api-key-here
+      merge_reasoning_content_in_choices: true
+  - model_name: fpt-claude-fast
+    litellm_params:
+      model: openai/gpt-oss-120b
+      api_base: https://mkp-api.fptcloud.com
+      api_key: api-key-here
+      merge_reasoning_content_in_choices: true
+#router_settings:
+#  disable_cooldowns: true
+litellm_settings:
+  drop_params: true
+#litellm_params:
+  # forcibly strip if Claude Code still attaches it
