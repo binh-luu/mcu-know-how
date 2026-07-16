@@ -129,10 +129,10 @@ dmypy.json
 .pyre/
 
 # cppcheck
-/cppcheck-main
+#/cppcheck-main
 
 # misra-c examples
-/Example-Suite-master
+#/Example-Suite-master
 
 # misrac 2012 rule
 #/misrac-2012.txt
