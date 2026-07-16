@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MISRA-C:2012 AI Fixing Assistant — GROUP 3</title>
+<style>
+:root {
+    --sidebar-w: 260px;
+    --accent: #1a6fd4;
+    --accent-light: #e8f0fb;
+    --red: #d93025;
+    --orange: #ea8600;
+    --yellow: #f9ab00;
+    --green: #1e8e3e;
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --border: #dadce0;
+    --text: #202124;
+    --text-muted: #5f6368;
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+    --tag-red: #fce8e6;
+    --tag-orange: #fef3e2;
+    --tag-green: #e6f4ea;
+    --tag-yellow: #fef9e0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; line-height: 1.6; }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: #1a1a2e;
+    color: #e8eaf6;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+  #sidebar-header {
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid #2d2d4e;
+  }
+  #sidebar-header .project { font-size: 11px; color: #7986cb; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+  #sidebar-header .title { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.3; }
+  #sidebar-header .meta { font-size: 11px; color: #9e9e9e; margin-top: 6px; }
+  #sidebar nav { flex: 1; padding: 12px 0; }
+  .nav-section { padding: 8px 16px 4px; font-size: 10px; color: #7986cb; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 16px 9px 20px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all .18s;
+    font-size: 13px; color: #b0bec5;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .nav-item.active { background: rgba(26,111,212,.18); border-left-color: #1a6fd4; color: #82b1ff; font-weight: 600; }
+  .nav-item .icon { font-size: 15px; flex-shrink: 0; }
+  .nav-item .badge {
+    margin-left: auto; font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px; flex-shrink: 0;
+  }
+  .badge-red { background: #d93025; color: #fff; }
+  .badge-orange { background: #ea8600; color: #fff; }
+  .badge-yellow { background: #f9ab00; color: #1a1a1a; }
+  .badge-blue { background: #1a6fd4; color: #fff; }
+  .badge-green { background: #1e8e3e; color: #fff; }
+  #sidebar-footer { padding: 12px 16px; border-top: 1px solid #2d2d4e; font-size: 11px; color: #616161; }
+
+  /* ── Confidence ── */
+  .conf { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+  .conf-high   { background: #e6f4ea; color: #1e8e3e; }
+  .conf-medium { background: #fef3e2; color: #b06000; }
+  .conf-low    { background: #fce8e6; color: #d93025; }
+  .conf-advisory { background: #e8f0fb; color: #1a6fd4; }
+  .verify-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .verify-row:last-child { border-bottom: none; }
+  .verify-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .verify-body { flex: 1; font-size: 13px; }
+  .verify-claim { font-weight: 600; margin-bottom: 2px; }
+  .verify-source { font-size: 11.5px; color: var(--text-muted); font-family: monospace; }
+
+  /* ── Main Content ── */
+  #main { margin-left: var(--sidebar-w); flex: 1; padding: 0; }
+  .section { display: none; padding: 32px 36px 60px; max-width: 1100px; }
+  .section.active { display: block; }
+
+  /* ── Section Headers ── */
+  .section-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .section-subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 2px solid var(--border); }
+
+  /* ── Cards ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+  /* ── Alert Boxes ── */
+  .alert { border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; display: flex; gap: 12px; align-items: flex-start; }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .alert-body { flex: 1; }
+  .alert-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  .alert-desc { font-size: 13px; line-height: 1.5; }
+  .alert-red { background: #fce8e6; border-left: 4px solid var(--red); }
+  .alert-orange { background: #fef3e2; border-left: 4px solid var(--orange); }
+  .alert-yellow { background: #fef9e0; border-left: 4px solid var(--yellow); }
+  .alert-blue { background: var(--accent-light); border-left: 4px solid var(--accent); }
+  .alert-green { background: #e6f4ea; border-left: 4px solid var(--green); }
+
+  /* ── Code Block ── */
+  .code-block {
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px; padding: 16px 20px; margin: 12px 0;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto;
+    border: 1px solid #313244;
+    white-space: pre;
+  }
+  .code-block .file-label {
+    display: inline-block;
+    background: #313244; color: #a6e3a1;
+    font-size: 11px; padding: 2px 10px; border-radius: 4px;
+    margin-bottom: 10px; letter-spacing: .02em;
+  }
+  .code-block .line-bad { background: rgba(243,139,168,.15); display: block; border-left: 2px solid #f38ba8; padding-left: 8px; margin-left: -8px; }
+  .code-block .line-good { background: rgba(166,227,161,.1); display: block; border-left: 2px solid #a6e3a1; padding-left: 8px; margin-left: -8px; }
+  .code-block .line-info { background: rgba(137,180,250,.08); display: block; }
+  .code-block .comment { color: #6c7086; }
+  .code-block .keyword { color: #cba6f7; }
+  .code-block .string { color: #a6e3a1; }
+  .code-block .number { color: #fab387; }
+  .code-block .fn { color: #89b4fa; }
+  .code-block .type { color: #f9e2af; }
+  .code-block .ln { color: #45475a; user-select: none; display: inline-block; width: 32px; text-align: right; margin-right: 12px; }
+  .code-block .bash-cmd {
+    color: #a6e3a1;
+    font-weight: 600;
+  }
+  .code-block .bash-cmd::before {
+    content: '$ ';
+    color: #f9e2af;
+    font-weight: 400;
+    margin-right: 4px;
+  }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+  th { background: #f1f3f4; font-weight: 600; padding: 10px 14px; text-align: left; border: 1px solid var(--border); font-size: 12px; }
+  td { padding: 9px 14px; border: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* ── Tags/Chips ── */
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .chip-red { background: var(--tag-red); color: var(--red); }
+  .chip-orange { background: var(--tag-orange); color: #b06000; }
+  .chip-yellow { background: #fef9e0; color: #7a5c00; }
+  .chip-green { background: var(--tag-green); color: var(--green); }
+  .chip-blue { background: var(--accent-light); color: var(--accent); }
+  .chip-gray { background: #f1f3f4; color: #5f6368; }
+
+  /* ── Grid ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── Metric Box ── */
+  .metric-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; text-align: center; }
+  .metric-box .value { font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
+  .metric-box .label { font-size: 12px; color: var(--text-muted); }
+  .metric-box .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── Progress Bar ── */
+  .progress-row { margin: 8px 0; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .progress-bar { height: 8px; background: #e8eaed; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; }
+
+  /* ── Timeline / Roadmap ── */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 10px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+  .tl-item { position: relative; margin-bottom: 24px; }
+  .tl-dot { position: absolute; left: -22px; top: 4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 2px var(--border); }
+  .tl-dot-red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .tl-dot-orange { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+  .tl-dot-yellow { background: var(--yellow); box-shadow: 0 0 0 2px var(--yellow); }
+  .tl-dot-green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .tl-dot-blue { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .tl-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .tl-body { font-size: 13px; color: var(--text-muted); }
+
+  /* ── File Path ── */
+  .filepath { font-family: monospace; font-size: 12px; background: #f1f3f4; padding: 2px 8px; border-radius: 4px; color: #1a6fd4; display: inline-block; }
+  .lineno { font-family: monospace; font-size: 11px; background: #fef3e2; color: #b06000; padding: 1px 6px; border-radius: 3px; display: inline; }
+
+  /* ── Section Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* ── Comparison Box ── */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+  .compare-box { border-radius: 8px; padding: 16px; }
+  .compare-bad { background: #fce8e6; border: 1px solid #f5c6c3; }
+  .compare-good { background: #e6f4ea; border: 1px solid #c3dcc8; }
+  .compare-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+  .compare-bad .compare-label { color: var(--red); }
+  .compare-good .compare-label { color: var(--green); }
+
+  /* ── Scrollbar ── */
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-thumb { background: #37374f; border-radius: 2px; }
+
+  h3 { font-size: 15px; font-weight: 700; margin: 22px 0 10px; }
+  h4 { font-size: 13px; font-weight: 700; margin: 16px 0 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+  p { margin-bottom: 10px; line-height: 1.65; }
+  ul, ol { margin: 8px 0 12px 20px; }
+  li { margin-bottom: 5px; line-height: 1.6; }
+  strong { font-weight: 600; }
+
+/* ══════════ DECK EXTENSIONS ══════════ */
+.svg-wrap { background:linear-gradient(180deg,#f8faff,#eef3fc); border:1px solid var(--border); border-radius:12px; padding:18px; margin:14px 0; }
+
+/* Flow diagram (boxes + arrows) */
+.flow { display:flex; align-items:stretch; gap:6px; flex-wrap:wrap; margin:12px 0; }
+.flow-box { flex:1; min-width:120px; background:var(--surface); border:2px solid var(--accent); border-radius:9px; padding:10px 12px; font-size:12px; text-align:center; display:flex; flex-direction:column; justify-content:center; }
+.flow-box .fb-t { font-weight:700; font-size:12.5px; color:var(--accent); }
+.flow-box .fb-s { font-size:10.5px; color:var(--text-muted); margin-top:3px; font-family:monospace; }
+.flow-arrow { display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:22px; font-weight:800; min-width:22px; }
+
+/* Colored BLOCK cards for BLOCK 0..6 flow */
+.blk-flow { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:14px 0; }
+.blk { border-radius:10px; padding:12px 14px; color:#fff; position:relative; box-shadow:0 2px 6px rgba(0,0,0,.12); }
+.blk .step { position:absolute; top:-9px; right:10px; background:#fff; color:#1a1a2e; font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+.blk .bk-t { font-weight:800; font-size:13px; margin-bottom:5px; }
+.blk .bk-d { font-size:11px; line-height:1.5; opacity:.95; }
+.b0{background:linear-gradient(135deg,#1a6fd4,#155bb0)} .b1{background:linear-gradient(135deg,#0e9488,#0b7a70)}
+.b2{background:linear-gradient(135deg,#5b4bd4,#4636b8)} .b3{background:linear-gradient(135deg,#8b3fd4,#7228b8)}
+.b4{background:linear-gradient(135deg,#ea8600,#c96f00)} .b5{background:linear-gradient(135deg,#3a3a52,#26263a)}
+.b6{background:linear-gradient(135deg,#1e8e3e,#166b2e)} .bh{background:linear-gradient(135deg,#d93025,#b3251c)}
+.blk-arrow{grid-column:1/-1;text-align:center;color:var(--accent);font-size:20px;font-weight:800;margin:-4px 0}
+
+/* Pre-condition strip */
+.precond { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:10px 0; }
+.pc { background:#eef3fc; border:1px dashed #9db8e0; border-radius:8px; padding:9px 10px; font-size:11px; text-align:center; }
+.pc .pc-i{ font-size:18px; } .pc .pc-t{ font-weight:700; color:var(--accent); margin-top:2px; font-size:11px; } .pc .pc-d{ color:var(--text-muted); font-size:10px; margin-top:2px; }
+
+/* Loop diagram */
+.loop-grid{ display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin:14px 0; }
+.loop-node{ border-radius:10px; padding:12px 14px; font-size:12px; color:#fff; text-align:center; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,.12); }
+.loop-c{ font-size:26px; color:var(--accent); text-align:center; font-weight:800; }
+
+/* Chain (pain→root→impact→AI) */
+.chain{ display:flex; flex-direction:column; gap:0; margin:12px 0; }
+.chain-row{ display:flex; align-items:stretch; gap:10px; }
+.chain-tag{ min-width:120px; border-radius:8px 0 0 8px; padding:12px; color:#fff; font-weight:700; font-size:12px; display:flex; align-items:center; }
+.chain-body{ flex:1; border:1px solid var(--border); border-left:none; border-radius:0 8px 8px 0; padding:10px 14px; font-size:13px; background:var(--surface); }
+.ct-pain{background:#d93025} .ct-root{background:#ea8600} .ct-impact{background:#7a5c00} .ct-ai{background:#1e8e3e}
+.chain-link{ text-align:center; color:var(--text-muted); font-size:16px; margin:2px 0; }
+
+/* Animations for vividness */
+@keyframes sweGlow { 0%,100%{ filter:drop-shadow(0 0 2px rgba(217,48,37,.55)); } 50%{ filter:drop-shadow(0 0 11px rgba(217,48,37,.95)); } }
+.swe-hl { animation:sweGlow 2.2s ease-in-out infinite; }
+@keyframes dashmove { to { stroke-dashoffset:-18; } }
+.animated-dash { animation:dashmove 1s linear infinite; }
+@keyframes floatIn { from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:none;} }
+.section.active .card, .section.active .alert, .section.active .svg-wrap { animation:floatIn .4s ease both; }
+.card{ transition:box-shadow .2s, transform .2s; }
+.card:hover{ box-shadow:0 6px 18px rgba(0,0,0,.09); }
+.kpi-badge{ display:inline-block; font-weight:800; font-size:15px; padding:1px 8px; border-radius:6px; }
+.badge-green{ background:var(--green); color:#fff; }
+
+@media (max-width:820px){ .blk-flow{grid-template-columns:repeat(2,1fr)} .precond{grid-template-columns:repeat(2,1fr)} .loop-grid{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<!-- ════════════ SIDEBAR ════════════ -->
+<nav id="sidebar">
+  <div id="sidebar-header">
+    <div class="project">MISRA-C:2012 AI FIXING ASSISTANT</div>
+    <div class="title">Group 3</div>
+    <div class="meta">RAG + LLM + Static Analysis</div>
+  </div>
+
+  <nav>
+    <div class="nav-section">Main Presentation</div>
+    <div class="nav-item active" onclick="show('problem')"><span class="icon">🎯</span> 1 · Problem Statement</div>
+    <div class="nav-item" onclick="show('solution')"><span class="icon">💡</span> 2 · Solution Overview</div>
+    <div class="nav-item" onclick="show('architecture')"><span class="icon">🏗️</span> 3 · Architecture & Code Design</div>
+    <div class="nav-item" onclick="show('deployment')"><span class="icon">🚀</span> 4 · Deployment Steps</div>
+
+    <div class="nav-section">Appendix</div>
+    <div class="nav-item" onclick="show('appendix-code')"><span class="icon">📄</span> 5 · Appendix: Code Files & Implementation</div>
+  </nav>
+
+  <div id="sidebar-footer">
+    BinhLV13 · CanhTQ4 · ChungNC · DatNT261 · DungDA3 · LamTT4 · ManhHH · NghiHH2 · ToanBV7 · VietTQ29
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ════════════ 1. PROBLEM STATEMENT ════════════ -->
+<div id="section-problem" class="section active">
+  <div class="section-title">🎯 1 · Problem Statement</div>
+  <div class="section-subtitle">MISRA-C:2012 compliance is critical for safety-critical embedded systems, yet manual fixing is slow, error-prone, and expensive</div>
+
+    <div class="svg-wrap">
+    <svg viewBox="0 0 900 470" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'Segoe UI',Arial,sans-serif">
+  <defs>
+    <linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b7fe0"/><stop offset="1" stop-color="#1a6fd4"/></linearGradient>
+    <linearGradient id="gRed" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0503f"/><stop offset="1" stop-color="#d93025"/></linearGradient>
+    <marker id="arr" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa4b2"/></marker>
+    <marker id="arrR" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d93025"/></marker>
+  </defs>
+  <text x="450" y="24" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2430">ASPICE V-Model &#8212; Software Engineering (SWE)</text>
+  <!-- <text x="450" y="42" text-anchor="middle" font-size="10.5" fill="#8a94a4">SWE.3 at the bottom &#8212; alot of manual effort here</text> -->
+  <polyline points="140,116 270,182 360,292" fill="none" stroke="#c5d0de" stroke-width="3"/>
+  <polyline points="560,292 630,182 760,116" fill="none" stroke="#c5d0de" stroke-width="3"/>
+  <line x1="222" y1="84" x2="678" y2="84" stroke="#b9c4d4" stroke-width="1.5" stroke-dasharray="6 5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <line x1="352" y1="194" x2="548" y2="194" stroke="#b9c4d4" stroke-width="1.5" stroke-dasharray="6 5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <line x1="442" y1="324" x2="478" y2="324" stroke="#b9c4d4" stroke-width="1.5" stroke-dasharray="6 5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <rect x="60" y="52" width="160" height="64" rx="8" fill="url(#gBlue)"/>
+  <text x="140" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">SWE.1</text>
+  <text x="140" y="98" text-anchor="middle" font-size="9.5" fill="#e8f0fb">SW Requirements Analysis</text>
+  <rect x="190" y="162" width="160" height="64" rx="8" fill="url(#gBlue)"/>
+  <text x="270" y="190" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">SWE.2</text>
+  <text x="270" y="208" text-anchor="middle" font-size="9.5" fill="#e8f0fb">SW Architectural Design</text>
+  <rect x="280" y="292" width="160" height="64" rx="8" fill="url(#gRed)" stroke="#7a0f08" stroke-width="1.5" class="swe-hl"/>
+  <text x="360" y="315" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">SWE.3</text>
+  <text x="360" y="330" text-anchor="middle" font-size="8.5" fill="#ffe3e0">Detailed Design & Unit Constr.</text>
+  <text x="360" y="345" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">&#9670; Finding + Fix (MISRAC-C)</text>
+  <rect x="480" y="292" width="160" height="64" rx="8" fill="url(#gBlue)"/>
+  <text x="560" y="315" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">SWE.4</text>
+  <text x="560" y="330" text-anchor="middle" font-size="8.5" fill="#ffe3e0">SW Unit Verification</text>
+  <text x="560" y="345" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">&#9670; Unit Test (winAMS)</text>
+  <rect x="550" y="162" width="160" height="64" rx="8" fill="url(#gBlue)"/>
+  <text x="630" y="190" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">SWE.5</text>
+  <text x="630" y="208" text-anchor="middle" font-size="9.5" fill="#e8f0fb">SW Integration & Int. Test</text>
+  <rect x="680" y="52" width="160" height="64" rx="8" fill="url(#gBlue)"/>
+  <text x="760" y="80" text-anchor="middle" font-size="14" font-weight="700" fill="#fff">SWE.6</text>
+  <text x="760" y="98" text-anchor="middle" font-size="9.5" fill="#e8f0fb">SW Qualification Test</text>
+  <rect x="290" y="392" width="320" height="56" rx="8" fill="#fff5f4" stroke="#f3b0aa" stroke-width="1.5"/>
+  <text x="450" y="414" text-anchor="middle" font-size="11.5" font-weight="700" fill="#d93025">&#9660; Focus points</text>
+  <text x="450" y="433" text-anchor="middle" font-size="10.5" fill="#5f6368">Reduce the repeately manual effort for SWE.3</text>
+</svg>
+  </div>
+
+  <div class="alert alert-blue">
+    <div class="alert-icon">📋</div>
+    <div class="alert-body">
+      <div class="alert-title">The Core Challenge</div>
+      <div class="alert-desc">Safety-critical industries (automotive, aerospace, medical devices) must comply with MISRA-C:2012 coding standards. However, <strong>manual violation fixing is time-consuming, inconsistent, and costly</strong>. Static analysis tools like cppcheck generate hundreds of violations per codebase, each requiring deep understanding of MISRA rules, context analysis, and careful code modification without introducing regressions.</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">⏱️ Time & Effort</div>
+      <p>Each violation takes <strong>15-30 minutes</strong> for manual analysis and fixing. A typical codebase with 500+ violations requires <strong>200+ engineer hours</strong>.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 Accuracy & Consistency</div>
+      <p>Manual fixes vary by engineer expertise. <strong>Inconsistent interpretations</strong> of MISRA rules lead to different fix approaches for similar violations.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🔄 Regression Risk</div>
+      <p>Manual code modifications without comprehensive testing introduce <strong>regression bugs</strong>. No automated validation of fixes against MISRA rules.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">📚 Knowledge Barrier</div>
+      <p>MISRA-C:2012 has <strong>143 rules + 16 directives</strong>. Engineers need deep domain knowledge. Junior engineers struggle with complex rules like 10.x (essential types), 11.x (pointers), 17.x (pointers/arrays).</p>
+    </div>
+  </div>
+
+  <div class="alert alert-orange">
+    <div class="alert-icon">💡</div>
+    <div class="alert-body">
+      <div class="alert-title">Opportunity</div>
+      <div class="alert-desc"><strong>AI + RAG + Static Analysis</strong> can automate the full pipeline: detect violations → enrich with context (AST, types, cross-file symbols) → retrieve relevant MISRA examples → generate fixes with LLM → self-review → produce validated git patches. This reduces effort by <strong>60-80%</strong> while improving consistency and traceability.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════ 2. SOLUTION OVERVIEW ════════════ -->
+<div id="section-solution" class="section">
+  <div class="section-title">💡 2 · Solution Overview</div>
+  <div class="section-subtitle">MISRA-C:2012 AI Fixing Assistant — End-to-end automated violation fixing with RAG-enhanced LLM</div>
+
+  <div class="alert alert-green">
+    <div class="alert-icon">🏗️</div>
+    <div class="alert-body">
+      <div class="alert-title">High-Level Architecture</div>
+      <div class="alert-desc">The solution combines <strong>static analysis (cppcheck)</strong>, <strong>vector-based RAG (ChromaDB)</strong>, <strong>LLM-powered fix generation (OpenAI GPT-4o)</strong>, and <strong>agentic workflow orchestration (LangGraph)</strong> into a unified pipeline that produces validated git patches for MISRA violations.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔄 End-to-End Pipeline</div>
+    <div class="flow">
+      <div class="flow-box" style="border-color:var(--code-bg)"><div class="fb-t" style="color:var(--code-bg)">C Source Files</div><div class="fb-s">src/</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--accent)"><div class="fb-t" style="color:var(--accent)">Static Analysis</div><div class="fb-s">cppcheck + misra.py</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--accent)"><div class="fb-t" style="color:var(--accent)">Violations CSV</div><div class="fb-s">report/</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--red)"><div class="fb-t" style="color:var(--red)">Context Enrichment</div><div class="fb-s">AST + CTU + Function Scope</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--red)"><div class="fb-t" style="color:var(--red)">RAG Retrieval</div><div class="fb-s">ChromaDB + MISRA Examples</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--red)"><div class="fb-t" style="color:var(--red)">LLM Fix Generation</div><div class="fb-s">GPT-4o + LangGraph</div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--green)"><div class="fb-t" style="color:var(--green)">Self-Review + Patches</div><div class="fb-s">Validated Git Diffs</div></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">🔑 Key Capabilities</div>
+      <ul style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+        <li><strong>Automated Static Analysis:</strong> cppcheck --dump generates .dump (AST) and .ctu-info (cross-file symbols)</li>
+        <li><strong>Rich Context Extraction:</strong> Function scope, surrounding lines, typedefs, macros, variables with resolved types, cross-file symbols</li>
+        <li><strong>MISRA Rule RAG:</strong> ChromaDB stores Example Suite (R_*.c, D_*.c) with embeddings for semantic retrieval</li>
+        <li><strong>Agentic Workflow:</strong> LangGraph orchestrates 6-step pipeline: Categorize → Context → RAG → Generate → Review → Patch</li>
+        <li><strong>Self-Review Loop:</strong> LLM validates its own fixes (approved/issues/summary schema)</li>
+        <li><strong>Git Patch Output:</strong> Unified diffs grouped by rule, ready for <code>patch -p0</code> or <code>git apply</code></li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">📦 Tech Stack</div>
+      <table>
+        <tr><th>Category</th><th>Technology</th></tr>
+        <tr><td>LLM</td><td>OpenAI model (ex: GPT-4o-mini)</td></tr>
+        <tr><td>Orchestration</td><td>LangChain + LangGraph</td></tr>
+        <tr><td>Embeddings</td><td>OpenAI embedding model (ex: text-embedding-3-small)</td></tr>
+        <tr><td>Vector DB</td><td>ChromaDB (local, persistent, cosine similarity)</td></tr>
+        <tr><td>Static Analysis</td><td>cppcheck + custom misra.py</td></tr>
+        <tr><td>UI</td><td>Streamlit (workflow, RAG explorer, source browser)</td></tr>
+        <tr><td>Testing</td><td>pytest (multiple tests)</td></tr>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════ 3. SYSTEM ARCHITECTURE & CODE DESIGN ════════════ -->
+<div id="section-architecture" class="section">
+  <div class="section-title">🏗️ 3 · Architecture & Code Design</div>
+  <div class="section-subtitle">Detailed component architecture, data flow, and key implementation decisions</div>
+
+<div class="card">
+    <div class="card-title">🔄 Data Flow — 4 Phases</div>
+    <div class="code-block"><pre>
+              ┌────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+              │                                                                                                        │
+              │  Phase 1: Static Analysis                                                                              │
+              │  ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐  │
+              │  │                                                                                                  │  │
+              │  │  src/example.c ──► cppcheck --dump ──► src/example.c.dump (XML: AST, types, symbols, CFG)        │  │
+              │  │                              └──► src/example.c.ctu-info (JSON: cross-file symbols)              │  │
+              │  │                                                                                                  │  │
+              │  │  src/example.c.dump + misrac-2012.txt ──► python misra.py ──► report/example.c.csv               │  │
+              │  │                                                                                                  │  │
+              │  └──────────────────────────────────────────────────────────────────────────────────────────────────┘  │
+              │                                                                                                        │
+              │  Phase 2: Violation Ingestion                                                                          │
+              │  ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐  │
+              │  │                                                                                                  │  │
+              │  │  report/*.csv ──► csv_loader.load_all_reports() ──► List[Violation]                              │  │
+              │  │                                                                                                  │  │
+              │  └──────────────────────────────────────────────────────────────────────────────────────────────────┘  │
+              │                                                                                                        │
+              │  Phase 3: Context Enrichment                                                                           │
+              │  ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐  │
+              │  │                                                                                                  │  │
+              │  │  For each Violation:                                                                             │  │
+              │  │                                                                                                  │  │
+              │  │  ┌─────────────────────┐    ┌──────────────────────┐    ┌─────────────────────┐                  │  │
+              │  │  │ CodeContextExtractor│    │ DumpParser           │    │ RAGRetriever        │                  │  │
+              │  │  │                     │    │                      │    │                     │                  │  │
+              │  │  │ Reads src/example.c │    │ Parses .dump XML:    │    │ Queries ChromaDB:   │                  │  │
+              │  │  │                     │    │ - typedefs           │    │ - Similar rule      │                  │  │
+              │  │  │ - surrounding lines │    │ - macros             │    │   examples          │                  │  │
+              │  │  │ - function scope    │    │ - variables + types  │    │ - Example code      │                  │  │
+              │  │  │                     │    │ - functions + types  │    │                     │                  │  │
+              │  │  │                     │    │ - token type info    │    │                     │                  │  │
+              │  │  │                     │    │                      │    │                     │                  │  │
+              │  │  │                     │    │ Parses .ctu-info:    │    │                     │                  │  │
+              │  │  │                     │    │ - exported typedefs  │    │                     │                  │  │
+              │  │  │                     │    │ - external IDs       │    │                     │                  │  │
+              │  │  │                     │    │ - internal IDs       │    │                     │                  │  │
+              │  │  │                     │    │ - symbol usage       │    │                     │                  │  │
+              │  │  └────────┬────────────┘    └──────────┬───────────┘    └────────┬────────────┘                  │  │
+              │  │           │                            │                         │                               │  │
+              │  │           └────────────┬───────────────┴─────────────────────────┘                               │  │
+              │  │                        ▼                                                                         │  │
+              │  │              CodeContext object:                                                                 │  │
+              │  │              - surrounding_lines                                                                 │  │
+              │  │              - function_scope                                                                    │  │
+              │  │              - dump_context (formatted string)                                                   │  │
+              │  │              - ctu_context (formatted string)                                                    │  │
+              │  │                                                                                                  │  │
+              │  └──────────────────────────────────────────────────────────────────────────────────────────────────┘  │
+              │                                                                                                        │
+              │  Phase 4: Fix Generation                                                                               │
+              │  ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐  │
+              │  │                                                                                                  │  │
+              │  │  LLM Prompt includes:                                                                            │  │
+              │  │  ┌──────────────────────────────────────────────────────────────────────────────────────────┐    │  │
+              │  │  │ Rule: 10.4, Category: Mandatory                                                          │    │  │
+              │  │  │                                                                                          │    │  │
+              │  │  │ --- Code Context ---                                                                     │    │  │
+              │  │  │ >>> 42: result = (uint16)(N - 1) + idx;                                                  │    │  │
+              │  │  │                                                                                          │    │  │
+              │  │  │ --- Static Analysis Context ---                                                          │    │  │
+              │  │  │ Platform: char_bit=8, int_bit=32, pointer_bit=64                                         │    │  │
+              │  │  │ Variables: uint16 idx (line 23), sint16 currentTemp (line 21)                            │    │  │
+              │  │  │ Type Info Near Line 42: ...                                                              │    │  │
+              │  │  │                                                                                          │    │  │
+              │  │  │ --- Cross-Translation-Unit Info ---                                                      │    │  │
+              │  │  │ External Identifiers: TableData, main                                                    │    │  │
+              │  │  │                                                                                          │    │  │
+              │  │  │ --- Relevant MISRA Rule Context ---                                                      │    │  │
+              │  │  │ Rule 10.4 examples from Example Suite...                                                 │    │  │
+              │  │  └──────────────────────────────────────────────────────────────────────────────────────────┘    │  │
+              │  │                                                                                                  │  │
+              │  │  LLM ──► Fix(description, original_code, fixed_code) ──► Self-Review ──► Git Patch               │  │
+              │  │                                                                                                  │  │
+              │  └──────────────────────────────────────────────────────────────────────────────────────────────────┘  │
+              │                                                                                                        │
+              │  Output: patches/rule_X.Y.patch + results.json                                                         │
+              │                                                                                                        │
+              └────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">⚙️ Key Implementation Details</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">LangGraph Workflow (workflow.py)</div>
+        <ol style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+          <li><strong>Categorize:</strong> Group by rule_id, sort by priority (Mandatory=1, Required=2, Advisory=3)</li>
+          <li><strong>Extract Context:</strong> Read src/, ±10 lines, function scope, DumpParser + CTU</li>
+          <li><strong>RAG Retrieval:</strong> Query ChromaDB with "{rule_id}: {description}", top_k=5</li>
+          <li><strong>Generate Fixes:</strong> LLM call with temperature=0.1, JSON response format</li>
+          <li><strong>Self-Review:</strong> LLM validates fix (approved/issues/summary)</li>
+          <li><strong>Generate Patches:</strong> difflib.unified_diff per fix, grouped by rule</li>
+        </ol>
+      </div>
+      <div class="card">
+        <div class="card-title">ChromaDB Vector Store</div>
+        <ul style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+          <li>PersistentClient with <code>anonymized_telemetry=False</code></li>
+          <li>Collection: <code>misra_c_2012_rules</code></li>
+          <li>Cosine similarity (hnsw:space=cosine)</li>
+          <li>Document format: <code>"Rule {id}: {desc}\n\nCategory: {cat}\n\nExample code:\n{examples}"</code></li>
+          <li>Batch embedding: 100 docs/request (rate limit handling)</li>
+          <li>Query: <code>"{rule_id}: {description}"</code> with optional rule_id filter</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">DumpParser (.dump + .ctu-info)</div>
+        <ul style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+          <li>.dump XML → platform types, typedefs, macros, variables+resolved types, functions+return types, per-line token info</li>
+          <li>.ctu-info JSON → exported typedefs, struct/union tags, macros, external/internal/local IDs, symbol usage</li>
+          <li>Auto-locates files: same dir, workspace root, src/</li>
+          <li>Formatted strings for LLM consumption</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title">Prompt Engineering (prompts.py)</div>
+        <ul style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+          <li><strong>FIX_GENERATION_SYSTEM_PROMPT:</strong> JSON response format with description, original_code, fixed_code</li>
+          <li><strong>FIX_GENERATION_USER_PROMPT_TEMPLATE:</strong> Rule, code context, static analysis, RAG examples</li>
+          <li><strong>SELF_REVIEW_SYSTEM_PROMPT:</strong> Output: approved (bool), issues (list), summary (str)</li>
+          <li>Temperature: 0.1 (deterministic)</li>
+          <li>Response format: <code>{"type": "json_object"}</code></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════ 4. DEPLOYMENT STEPS ════════════ -->
+<div id="section-deployment" class="section">
+  <div class="section-title">🚀 4 · Steps to Deploy the Application</div>
+  <div class="section-subtitle">Complete setup guide from environment preparation to running the pipeline</div>
+
+  <div class="card">
+    <div class="card-title">📋 Prerequisites</div>
+      <ul style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+        <li>Python 3.10+</li>
+        <li>cppcheck (installed and in PATH)</li>
+        <li>OpenAI API key (GPT-4o access)</li>
+        <li>Git (for patch application)</li>
+        <li>Linux/macOS/WSL2 recommended</li>
+      </ul>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🔧 Step-by-Step Deployment</div>
+
+    <h4>1. Clone & Environment Setup</h4>
+    <div class="code-block"><pre>
+# Clone repository
+<span class="bash-cmd">git clone <i>repository-url</i></span>
+<span class="bash-cmd">cd misrac-checker</span>
+
+# Create virtual environment
+<span class="bash-cmd">python3 -m venv venv</span>
+<span class="bash-cmd">source venv/bin/activate</span>
+
+# Install dependencies
+<span class="bash-cmd">pip install -r requirements.txt</span>
+# Key packages: langchain, langgraph, openai, chromadb, streamlit, pytest
+        </div>
+
+    <h4>2. Configure Environment</h4>
+    <div class="code-block"><pre>
+# Copy example env file
+<span class="bash-cmd">cp .env.example .env</span>
+
+# Edit .env and add your OpenAI API key
+# Required:
+OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+# Optional (defaults shown):
+OPENAI_MODEL=gpt-4o
+OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
+CHROMA_PERSIST_DIR=./chroma_db
+CHROMA_COLLECTION_NAME=misra_c_2012_rules
+SRC_DIR=./src
+REPORT_DIR=./report
+EXAMPLE_SUITE_DIR=./Example-Suite-master
+        </div>
+
+    <h4>3. Initialize Vector Database</h4>
+    <div class="code-block"><pre>
+# Parse Example Suite, create embeddings, populate ChromaDB
+<span class="bash-cmd">python -m backend.cli init</span>
+
+# Expected output:
+# === Initializing RAG Vector Store ===
+# Parsing Example Suite from ./Example-Suite-master...
+#   Found 159 rules/directives
+# Creating embeddings...
+# === Initialization Complete ===
+#   159 rules embedded in vector store
+        </div>
+
+    <h4>4. Place Source Files & Run Analysis</h4>
+    <div class="code-block"><pre>
+# Run static analysis to generate violation reports
+<span class="bash-cmd">python main.py src/example.c</span>
+
+# Or analyze all files:
+<span class="bash-cmd">for f in src/*.c; do python main.py "$f"; done</span>
+
+# Check generated reports
+<span class="bash-cmd">ls report/</span>
+        </div>
+
+    <h4>5. Generate Fixes (Full Pipeline)</h4>
+    <div class="code-block"><pre>
+# Run full AI pipeline: violations → context → RAG → LLM fixes → self-review → patches
+<span class="bash-cmd">python -m backend.cli analyze --output results.json --patch-dir ./patches</span>
+
+# Expected output:
+# === MISRA-C:2012 AI Analysis ===
+# Loading violations from ./report...
+#   Found 42 violations
+# Parsing Example Suite...
+#   Loaded 159 rules
+# [Workflow steps: Categorize → Context → RAG → Generate → Review → Patches]
+# Patches saved to ./patches/
+        </div>
+
+    <h4>6. Review & Apply Patches</h4>
+    <div class="code-block"><pre>
+# List generated patches
+<span class="bash-cmd">ls patches/</span>
+# rule_8.4.patch  rule_10.3.patch  rule_10.4.patch ...
+
+# Preview a patch
+<span class="bash-cmd">cat patches/rule_10.4.patch</span>
+
+# Dry-run apply (verify)
+<span class="bash-cmd">patch --dry-run -p0 < patches/rule_10.4.patch</span>
+
+# Apply patch
+<span class="bash-cmd">patch -p0 < patches/rule_10.4.patch</span>
+        </div>
+
+    <h4>7. Optional: Launch Streamlit UI</h4>
+    <div class="code-block"><pre>
+# Start web UI for workflow visualization, RAG explorer, source browser
+<span class="bash-cmd">pkill -f "streamlit run frontend/app.py" 2>/dev/null</span>
+<span class="bash-cmd">python -m streamlit run frontend/app.py --server.headless true --server.port 8501</span>
+
+# Open http://localhost:8501 in browser
+# Features:
+#   • Workflow tab: 3-step collage with live logs
+#   • RAG/Vector DB: Rule search, ChromaDB explorer
+#   • Source Files: C file browser with stats
+        </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">✅ Verification Checklist</div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Unit Tests</div>
+        <div class="code-block"><pre>
+# Run all tests (23 tests)
+<span class="bash-cmd">python -m pytest tests/ -v</span>
+
+# Expected: 23 passed
+# test_models.py: 6 tests
+# test_csv_loader.py: 4 tests
+# test_example_suite_parser.py: 3 tests
+# test_categorizer.py: 5 tests
+# test_context_extractor.py: 3 tests
+# test_fix_generator.py: 2 tests
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">End-to-End Validation</div>
+        <div class="code-block"><pre>
+# Verify patch validity
+<span class="bash-cmd">patch --dry-run -p0 < patches/rule_10.4.patch</span>
+# Should output: "patching file src/example.c"
+
+# Verify results.json structure
+<span class="bash-cmd">cat results.json | jq '.fixes[0] | {rule_id, description, self_review}'</span>
+
+# Check ChromaDB
+<span class="bash-cmd">python -c "import chromadb; c=chromadb.PersistentClient('./chroma_db'); print(c.list_collections())"</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-blue">
+    <div class="alert-icon">💡</div>
+    <div class="alert-body">
+      <div class="alert-title">Pro Tips</div>
+      <div class="alert-desc">
+        <ul style="margin:8px 0 0 18px; font-size:13px; line-height:1.8">
+          <li><strong>Incremental analysis:</strong> Re-run <code>analyze</code> after fixing some violations — it only processes remaining ones</li>
+          <li><strong>Rule-specific runs:</strong> Filter violations by rule_id in CSV before running analyze for targeted fixing</li>
+          <li><strong>Batch processing:</strong> Use <code>for f in src/*.c; do python main.py "$f"; done</code> for full codebase scan</li>
+          <li><strong>ChromaDB reset:</strong> Delete <code>./chroma_db</code> and re-run <code>init</code> to rebuild embeddings after rule updates</li>
+          <li><strong>Custom rules:</strong> Add <code>.c/.h</code> files to Example-Suite-master/ following <code>R_xx_yy.c</code> naming for custom rules</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ 5. APPENDIX: CODE FILES & IMPLEMENTATION ════════════ -->
+<div id="section-appendix-code" class="section">
+  <div class="section-title">📄 5 · Appendix: Detailed Code Files & Implementation Explanation</div>
+  <div class="section-subtitle">Complete reference for all backend modules, frontend components, and test files</div>
+
+  <div class="card">
+    <div class="card-title">📁 Project Structure</div>
+    <div class="code-block"><pre>
+misrac-checker/
+├── cppcheck-main                       # cppcheck binary & addons
+├── Example-Suite-master/               # MISRA reference examples
+├── src/                                # C files to analyze
+│
+├── backend/
+│   ├── cli.py                          # CLI: init, analyze, list
+│   ├── ingestion/
+│   │   ├── csv_loader.py               # CSV → List[Violation]
+│   │   └── example_suite_parser.py     # R_*.c/D_*.c → Rule objects
+│   ├── analysis/
+│   │   ├── context_extractor.py        # CodeContext + DumpParser
+│   │   ├── dump_parser.py              # .dump XML + .ctu-info JSON
+│   │   ├── categorizer.py              # Priority: Mandatory>Required>Advisory
+│   │   └── workflow.py                 # LangGraph 6-step pipeline
+│   ├── rag/
+│   │   ├── vector_store.py             # ChromaDB wrapper (cosine)
+│   │   ├── embedding_pipeline.py       # OpenAI embeddings (batch 100)
+│   │   └── retriever.py                # RAG query + formatting
+│   ├── fix_generation/
+│   │   ├── prompts.py                  # System/user prompt templates
+│   │   └── fix_generator.py            # LLM call + self-review + git diff
+│   └── utils/
+│       ├── models.py                   # Violation, Rule, Fix, CodeContext
+│       └── config.py                   # Centralized .env config
+├── frontend/
+│   ├── app.py                          # Streamlit UI
+│   └── services/backend_runner.py      # Subprocess runner
+├── tests/                              # Total 23 tests (pytest)
+│   ├── test_models.py                  # 6 tests (Violation, Rule, Fix, CodeContext, RuleCategory, RuleType)
+│   ├── test_csv_loader.py              # 4 tests (Single CSV, multiple CSVs, empty dir, missing dir)
+│   ├── test_example_suite_parser.py    # 3 tests (Rule ID parsing, minimal suite, missing dir)
+│   ├── test_categorizer.py             # 5 tests (Group by rule, priority, sort, processing order, summary)
+│   ├── test_context_extractor.py       # 3 tests (Context extraction, missing file, function scope)
+│   ├── test_fix_generator.py           # 2 tests (Fix generation, git patch generation)
+├── pytest.ini                          # pytest config
+├── .env.example                        # Example environment variables
+└── requirements.txt                    # Python dependencies
+    </div>
+  </div>
+
+  <!-- Table of Contents -->
+  <div class="card">
+    <div class="card-title">📋 Table of Contents</div>
+      <img src="class-diagram.png" alt="Class diagram for the automated fix workflow" style="max-width: 100%; height: auto; display: block;">
+  </div>
+
+</div>
+
+</main>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('section-' + id);
+  if (el) el.classList.add('active');
+  const nav = document.querySelector(`[onclick="show('${id}')"]`);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

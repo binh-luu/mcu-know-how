@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title><<REPORT TITLE>></title>
+<!--
+  ============================================================================
+  HTML REPORT TEMPLATE  —  html-report-style skill
+  ============================================================================
+  This file is the canonical, standalone reference report. It is fully
+  self-contained (the stylesheet is inlined inside <style> below) so it renders
+  correctly when opened directly in any browser, emailed, or embedded.
+
+  HOW TO USE
+  ----------
+  1. Copy this file to your project and rename it (e.g. deployment-report.html).
+  2. Replace every <<PLACEHOLDER>> token with real content.
+  3. Add / remove <div class="section"> blocks and matching sidebar nav items.
+  4. Keep the section id convention: id="section-<key>" and
+     onclick="show('<key>')". The show() function in the <script> at the bottom
+     toggles visibility.
+  5. Reuse the component snippets (cards, alerts, code blocks, tables, flows…)
+     found throughout this template. They are documented in
+     references/style-rules.md.
+
+  The CSS is identical to the original MISRA_C_AI_Assistant.html. The source of
+  truth lives in assets/reference-style.css; this inline copy is generated from
+  it so the two never drift.
+  ============================================================================
+-->
+<style>
+/* This CSS has been automatically extracted from the reference MISRA_C_AI_Assistant.html
+   and placed here to keep the report template both standalone and visually identical
+   to the original. The source of truth remains assets/reference-style.css. */
+
+:root {
+    --sidebar-w: 260px;
+    --accent: #1a6fd4;
+    --accent-light: #e8f0fb;
+    --red: #d93025;
+    --orange: #ea8600;
+    --yellow: #f9ab00;
+    --green: #1e8e3e;
+    --bg: #f8f9fa;
+    --surface: #ffffff;
+    --border: #dadce0;
+    --text: #202124;
+    --text-muted: #5f6368;
+    --code-bg: #1e1e2e;
+    --code-text: #cdd6f4;
+    --tag-red: #fce8e6;
+    --tag-orange: #fef3e2;
+    --tag-green: #e6f4ea;
+    --tag-yellow: #fef9e0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); display: flex; min-height: 100vh; font-size: 14px; line-height: 1.6; }
+
+  /* ── Sidebar ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-height: 100vh;
+    background: #1a1a2e;
+    color: #e8eaf6;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+  #sidebar-header {
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid #2d2d4e;
+  }
+  #sidebar-header .project { font-size: 11px; color: #7986cb; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 4px; }
+  #sidebar-header .title { font-size: 15px; font-weight: 700; color: #fff; line-height: 1.3; }
+  #sidebar-header .meta { font-size: 11px; color: #9e9e9e; margin-top: 6px; }
+  #sidebar nav { flex: 1; padding: 12px 0; }
+  .nav-section { padding: 8px 16px 4px; font-size: 10px; color: #7986cb; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 16px 9px 20px;
+    cursor: pointer;
+    border-left: 3px solid transparent;
+    transition: all .18s;
+    font-size: 13px; color: #b0bec5;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .nav-item.active { background: rgba(26,111,212,.18); border-left-color: #1a6fd4; color: #82b1ff; font-weight: 600; }
+  .nav-item .icon { font-size: 15px; flex-shrink: 0; }
+  .nav-item .badge {
+    margin-left: auto; font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 10px; flex-shrink: 0;
+  }
+  .badge-red { background: #d93025; color: #fff; }
+  .badge-orange { background: #ea8600; color: #fff; }
+  .badge-yellow { background: #f9ab00; color: #1a1a1a; }
+  .badge-blue { background: #1a6fd4; color: #fff; }
+  .badge-green { background: #1e8e3e; color: #fff; }
+  #sidebar-footer { padding: 12px 16px; border-top: 1px solid #2d2d4e; font-size: 11px; color: #616161; }
+
+  /* ── Confidence ── */
+  .conf { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+  .conf-high   { background: #e6f4ea; color: #1e8e3e; }
+  .conf-medium { background: #fef3e2; color: #b06000; }
+  .conf-low    { background: #fce8e6; color: #d93025; }
+  .conf-advisory { background: #e8f0fb; color: #1a6fd4; }
+  .verify-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .verify-row:last-child { border-bottom: none; }
+  .verify-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .verify-body { flex: 1; font-size: 13px; }
+  .verify-claim { font-weight: 600; margin-bottom: 2px; }
+  .verify-source { font-size: 11.5px; color: var(--text-muted); font-family: monospace; }
+
+  /* ── Main Content ── */
+  #main { margin-left: var(--sidebar-w); flex: 1; padding: 0; }
+  .section { display: none; padding: 32px 36px 60px; max-width: 1100px; }
+  .section.active { display: block; }
+
+  /* ── Section Headers ── */
+  .section-title { font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 4px; display: flex; align-items: center; gap: 10px; }
+  .section-subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 2px solid var(--border); }
+
+  /* ── Cards ── */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+
+  /* ── Alert Boxes ── */
+  .alert { border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; display: flex; gap: 12px; align-items: flex-start; }
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .alert-body { flex: 1; }
+  .alert-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  .alert-desc { font-size: 13px; line-height: 1.5; }
+  .alert-red { background: #fce8e6; border-left: 4px solid var(--red); }
+  .alert-orange { background: #fef3e2; border-left: 4px solid var(--orange); }
+  .alert-yellow { background: #fef9e0; border-left: 4px solid var(--yellow); }
+  .alert-blue { background: var(--accent-light); border-left: 4px solid var(--accent); }
+  .alert-green { background: #e6f4ea; border-left: 4px solid var(--green); }
+
+  /* ── Code Block ── */
+  .code-block {
+    background: var(--code-bg); color: var(--code-text);
+    border-radius: 8px; padding: 16px 20px; margin: 12px 0;
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 12.5px; line-height: 1.7; overflow-x: auto;
+    border: 1px solid #313244;
+    white-space: pre;
+  }
+  .code-block .file-label {
+    display: inline-block;
+    background: #313244; color: #a6e3a1;
+    font-size: 11px; padding: 2px 10px; border-radius: 4px;
+    margin-bottom: 10px; letter-spacing: .02em;
+  }
+  .code-block .line-bad { background: rgba(243,139,168,.15); display: block; border-left: 2px solid #f38ba8; padding-left: 8px; margin-left: -8px; }
+  .code-block .line-good { background: rgba(166,227,161,.1); display: block; border-left: 2px solid #a6e3a1; padding-left: 8px; margin-left: -8px; }
+  .code-block .line-info { background: rgba(137,180,250,.08); display: block; }
+  .code-block .comment { color: #6c7086; }
+  .code-block .keyword { color: #cba6f7; }
+  .code-block .string { color: #a6e3a1; }
+  .code-block .number { color: #fab387; }
+  .code-block .fn { color: #89b4fa; }
+  .code-block .type { color: #f9e2af; }
+  .code-block .ln { color: #45475a; user-select: none; display: inline-block; width: 32px; text-align: right; margin-right: 12px; }
+  .code-block .bash-cmd {
+    color: #a6e3a1;
+    font-weight: 600;
+  }
+  .code-block .bash-cmd::before {
+    content: '$ ';
+    color: #f9e2af;
+    font-weight: 400;
+    margin-right: 4px;
+  }
+
+  /* ── Tables ── */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 12px 0; }
+  th { background: #f1f3f4; font-weight: 600; padding: 10px 14px; text-align: left; border: 1px solid var(--border); font-size: 12px; }
+  td { padding: 9px 14px; border: 1px solid var(--border); vertical-align: top; }
+  tr:nth-child(even) td { background: #fafafa; }
+
+  /* ── Tags/Chips ── */
+  .chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+  .chip-red { background: var(--tag-red); color: var(--red); }
+  .chip-orange { background: var(--tag-orange); color: #b06000; }
+  .chip-yellow { background: #fef9e0; color: #7a5c00; }
+  .chip-green { background: var(--tag-green); color: var(--green); }
+  .chip-blue { background: var(--accent-light); color: var(--accent); }
+  .chip-gray { background: #f1f3f4; color: #5f6368; }
+
+  /* ── Grid ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* ── Metric Box ── */
+  .metric-box { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; text-align: center; }
+  .metric-box .value { font-size: 32px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
+  .metric-box .label { font-size: 12px; color: var(--text-muted); }
+  .metric-box .sub { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── Progress Bar ── */
+  .progress-row { margin: 8px 0; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
+  .progress-bar { height: 8px; background: #e8eaed; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 4px; }
+
+  /* ── Timeline / Roadmap ── */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 10px; top: 8px; bottom: 8px; width: 2px; background: var(--border); }
+  .tl-item { position: relative; margin-bottom: 24px; }
+  .tl-dot { position: absolute; left: -22px; top: 4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 2px var(--border); }
+  .tl-dot-red { background: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .tl-dot-orange { background: var(--orange); box-shadow: 0 0 0 2px var(--orange); }
+  .tl-dot-yellow { background: var(--yellow); box-shadow: 0 0 0 2px var(--yellow); }
+  .tl-dot-green { background: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .tl-dot-blue { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+  .tl-title { font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+  .tl-body { font-size: 13px; color: var(--text-muted); }
+
+  /* ── File Path ── */
+  .filepath { font-family: monospace; font-size: 12px; background: #f1f3f4; padding: 2px 8px; border-radius: 4px; color: #1a6fd4; display: inline-block; }
+  .lineno { font-family: monospace; font-size: 11px; background: #fef3e2; color: #b06000; padding: 1px 6px; border-radius: 3px; display: inline; }
+
+  /* ── Section Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+  /* ── Comparison Box ── */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+  .compare-box { border-radius: 8px; padding: 16px; }
+  .compare-bad { background: #fce8e6; border: 1px solid #f5c6c3; }
+  .compare-good { background: #e6f4ea; border: 1px solid #c3dcc8; }
+  .compare-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+  .compare-bad .compare-label { color: var(--red); }
+  .compare-good .compare-label { color: var(--green); }
+
+  /* ── Scrollbar ── */
+  #sidebar::-webkit-scrollbar { width: 4px; }
+  #sidebar::-webkit-scrollbar-thumb { background: #37374f; border-radius: 2px; }
+
+  h3 { font-size: 15px; font-weight: 700; margin: 22px 0 10px; }
+  h4 { font-size: 13px; font-weight: 700; margin: 16px 0 8px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+  p { margin-bottom: 10px; line-height: 1.65; }
+  ul, ol { margin: 8px 0 12px 20px; }
+  li { margin-bottom: 5px; line-height: 1.6; }
+  strong { font-weight: 600; }
+
+/* ══════════ DECK EXTENSIONS ══════════ */
+.svg-wrap { background:linear-gradient(180deg,#f8faff,#eef3fc); border:1px solid var(--border); border-radius:12px; padding:18px; margin:14px 0; }
+
+/* Flow diagram (boxes + arrows) */
+.flow { display:flex; align-items:stretch; gap:6px; flex-wrap:wrap; margin:12px 0; }
+.flow-box { flex:1; min-width:120px; background:var(--surface); border:2px solid var(--accent); border-radius:9px; padding:10px 12px; font-size:12px; text-align:center; display:flex; flex-direction:column; justify-content:center; }
+.flow-box .fb-t { font-weight:700; font-size:12.5px; color:var(--accent); }
+.flow-box .fb-s { font-size:10.5px; color:var(--text-muted); margin-top:3px; font-family:monospace; }
+.flow-arrow { display:flex; align-items:center; justify-content:center; color:var(--accent); font-size:22px; font-weight:800; min-width:22px; }
+
+/* Colored BLOCK cards for BLOCK 0..6 flow */
+.blk-flow { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:14px 0; }
+.blk { border-radius:10px; padding:12px 14px; color:#fff; position:relative; box-shadow:0 2px 6px rgba(0,0,0,.12); }
+.blk .step { position:absolute; top:-9px; right:10px; background:#fff; color:#1a1a2e; font-size:10px; font-weight:800; padding:2px 8px; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,.2); }
+.blk .bk-t { font-weight:800; font-size:13px; margin-bottom:5px; }
+.blk .bk-d { font-size:11px; line-height:1.5; opacity:.95; }
+.b0{background:linear-gradient(135deg,#1a6fd4,#155bb0)} .b1{background:linear-gradient(135deg,#0e9488,#0b7a70)}
+.b2{background:linear-gradient(135deg,#5b4bd4,#4636b8)} .b3{background:linear-gradient(135deg,#8b3fd4,#7228b8)}
+.b4{background:linear-gradient(135deg,#ea8600,#c96f00)} .b5{background:linear-gradient(135deg,#3a3a52,#26263a)}
+.b6{background:linear-gradient(135deg,#1e8e3e,#166b2e)} .bh{background:linear-gradient(135deg,#d93025,#b3251c)}
+.blk-arrow{grid-column:1/-1;text-align:center;color:var(--accent);font-size:20px;font-weight:800;margin:-4px 0}
+
+/* Pre-condition strip */
+.precond { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:10px 0; }
+.pc { background:#eef3fc; border:1px dashed #9db8e0; border-radius:8px; padding:9px 10px; font-size:11px; text-align:center; }
+.pc .pc-i{ font-size:18px; } .pc .pc-t{ font-weight:700; color:var(--accent); margin-top:2px; font-size:11px; } .pc .pc-d{ color:var(--text-muted); font-size:10px; margin-top:2px; }
+
+/* Loop diagram */
+.loop-grid{ display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin:14px 0; }
+.loop-node{ border-radius:10px; padding:12px 14px; font-size:12px; color:#fff; text-align:center; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,.12); }
+.loop-c{ font-size:26px; color:var(--accent); text-align:center; font-weight:800; }
+
+/* Chain (pain→root→impact→AI) */
+.chain{ display:flex; flex-direction:column; gap:0; margin:12px 0; }
+.chain-row{ display:flex; align-items:stretch; gap:10px; }
+.chain-tag{ min-width:120px; border-radius:8px 0 0 8px; padding:12px; color:#fff; font-weight:700; font-size:12px; display:flex; align-items:center; }
+.chain-body{ flex:1; border:1px solid var(--border); border-left:none; border-radius:0 8px 8px 0; padding:10px 14px; font-size:13px; background:var(--surface); }
+.ct-pain{background:#d93025} .ct-root{background:#ea8600} .ct-impact{background:#7a5c00} .ct-ai{background:#1e8e3e}
+.chain-link{ text-align:center; color:var(--text-muted); font-size:16px; margin:2px 0; }
+
+/* Animations for vividness */
+@keyframes sweGlow { 0%,100%{ filter:drop-shadow(0 0 2px rgba(217,48,37,.55)); } 50%{ filter:drop-shadow(0 0 11px rgba(217,48,37,.95)); } }
+.swe-hl { animation:sweGlow 2.2s ease-in-out infinite; }
+@keyframes dashmove { to { stroke-dashoffset:-18; } }
+.animated-dash { animation:dashmove 1s linear infinite; }
+@keyframes floatIn { from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:none;} }
+.section.active .card, .section.active .alert, .section.active .svg-wrap { animation:floatIn .4s ease both; }
+.card{ transition:box-shadow .2s, transform .2s; }
+.card:hover{ box-shadow:0 6px 18px rgba(0,0,0,.09); }
+.kpi-badge{ display:inline-block; font-weight:800; font-size:15px; padding:1px 8px; border-radius:6px; }
+.badge-green{ background:var(--green); color:#fff; }
+
+@media (max-width:820px){ .blk-flow{grid-template-columns:repeat(2,1fr)} .precond{grid-template-columns:repeat(2,1fr)} .loop-grid{grid-template-columns:1fr} }
+
+</style>
+</head>
+<body>
+
+<!-- ════════════ SIDEBAR ════════════ -->
+<nav id="sidebar">
+  <div id="sidebar-header">
+    <!-- EDIT: short uppercase project / report category -->
+    <div class="project"><<PROJECT / REPORT CATEGORY>></div>
+    <!-- EDIT: report title (e.g. project or system name) -->
+    <div class="title"><<REPORT TITLE>></div>
+    <!-- EDIT: one-line context (tech stack, version, date) -->
+    <div class="meta"><<CONTEXT META>></div>
+  </div>
+
+  <nav>
+    <div class="nav-section">Main</div>
+    <!-- EDIT: one nav-item per section. Keep onclick key == section id suffix -->
+    <div class="nav-item active" onclick="show('overview')"><span class="icon">📌</span> 1 · Overview</div>
+    <div class="nav-item" onclick="show('deployment')"><span class="icon">🚀</span> 2 · Deployment</div>
+    <div class="nav-item" onclick="show('architecture')"><span class="icon">🏗️</span> 3 · Architecture</div>
+    <div class="nav-item" onclick="show('results')"><span class="icon">📊</span> 4 · Results</div>
+
+    <div class="nav-section">Appendix</div>
+    <div class="nav-item" onclick="show('appendix')"><span class="icon">📄</span> 5 · Appendix</div>
+  </nav>
+
+  <div id="sidebar-footer">
+    <!-- EDIT: authors / team -->
+    <<AUTHOR 1>> · <<AUTHOR 2>> · <<AUTHOR 3>>
+  </div>
+</nav>
+
+<main id="main">
+
+<!-- ════════════ 1. OVERVIEW ════════════ -->
+<div id="section-overview" class="section active">
+  <div class="section-title">📌 1 · Overview</div>
+  <div class="section-subtitle"><<ONE-LINE SUBTITLE DESCRIBING THE REPORT PURPOSE>></div>
+
+  <!-- BLUE ALERT = informational highlight. Swap alert-blue for
+       alert-red / alert-orange / alert-yellow / alert-green as needed. -->
+  <div class="alert alert-blue">
+    <div class="alert-icon">ℹ️</div>
+    <div class="alert-body">
+      <div class="alert-title"><<ALERT TITLE>></div>
+      <div class="alert-desc"><<ALERT BODY — 1-2 sentences of context.>></div>
+    </div>
+  </div>
+
+  <!-- grid-2 = two equal columns. Use grid-3 for three. -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">⏱️ <<CARD 1 TITLE>></div>
+      <p><<CARD 1 BODY — describe a key point, metric, or constraint.>></p>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 <<CARD 2 TITLE>></div>
+      <p><<CARD 2 BODY.>></p>
+    </div>
+    <div class="card">
+      <div class="card-title">🔄 <<CARD 3 TITLE>></div>
+      <p><<CARD 3 BODY.>></p>
+    </div>
+    <div class="card">
+      <div class="card-title">📚 <<CARD 4 TITLE>></div>
+      <p><<CARD 4 BODY.>></p>
+    </div>
+  </div>
+
+  <!-- METRIC BOXES: drop in KPIs -->
+  <div class="grid-3">
+    <div class="metric-box">
+      <div class="value"><<42>></div>
+      <div class="label"><<METRIC LABEL>></div>
+      <div class="sub"><<METRIC SUBLABEL>></div>
+    </div>
+    <div class="metric-box">
+      <div class="value"><<98%>></div>
+      <div class="label"><<METRIC LABEL>></div>
+      <div class="sub"><<METRIC SUBLABEL>></div>
+    </div>
+    <div class="metric-box">
+      <div class="value"><<3.2h>></div>
+      <div class="label"><<METRIC LABEL>></div>
+      <div class="sub"><<METRIC SUBLABEL>></div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="card">
+    <div class="card-title">📋 <<TABLE TITLE>></div>
+    <table>
+      <tr><th><<Column A>></th><th><<Column B>></th><th><<Column C>></th></tr>
+      <tr><td><<value>></td><td><<value>></td><td><<value>></td></tr>
+      <tr><td><<value>></td><td><<value>></td><td><<value>></td></tr>
+    </table>
+  </div>
+
+  <!-- CODE BLOCK (use for config snippets, JSON, logs). Syntax classes:
+       .keyword .string .number .fn .type .comment -->
+  <div class="card">
+    <div class="card-title">🧾 <<CODE BLOCK TITLE>></div>
+    <div class="code-block"><pre><span class="file-label"><<file.c>></span>
+<span class="ln">1</span><span class="comment">// example source excerpt</span>
+<span class="ln">2</span><span class="keyword">int</span> <span class="fn">main</span>(<span class="keyword">void</span>) {
+<span class="ln">3</span>    <span class="type">uint16_t</span> count = <span class="number">0</span>;
+<span class="ln">4</span>    <span class="keyword">return</span> count;
+<span class="ln">5</span>}</pre></div>
+  </div>
+</div>
+
+<!-- ════════════ 2. DEPLOYMENT ════════════ -->
+<div id="section-deployment" class="section">
+  <div class="section-title">🚀 2 · Deployment</div>
+  <div class="section-subtitle"><<DEPLOYMENT SUBTITLE>></div>
+
+  <!-- FLOW: horizontal pipeline of boxes connected by arrows -->
+  <div class="card">
+    <div class="card-title">🔄 <<PIPELINE TITLE>></div>
+    <div class="flow">
+      <div class="flow-box" style="border-color:var(--code-bg)"><div class="fb-t" style="color:var(--code-bg)"><<Step 1>></div><div class="fb-s"><<detail>></div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--accent)"><div class="fb-t" style="color:var(--accent)"><<Step 2>></div><div class="fb-s"><<detail>></div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--accent)"><div class="fb-t" style="color:var(--accent)"><<Step 3>></div><div class="fb-s"><<detail>></div></div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-box" style="border-color:var(--green)"><div class="fb-t" style="color:var(--green)"><<Step 4>></div><div class="fb-s"><<detail>></div></div>
+    </div>
+  </div>
+
+  <!-- ORANGE ALERT = warning / caution -->
+  <div class="alert alert-orange">
+    <div class="alert-icon">⚠️</div>
+    <div class="alert-body">
+      <div class="alert-title"><<PRECONDITION / WARNING TITLE>></div>
+      <div class="alert-desc"><<DESCRIBE A REQUIREMENT OR RISK.>></div>
+    </div>
+  </div>
+
+  <!-- BASH COMMAND BLOCK: use .bash-cmd for shell lines -->
+  <div class="card">
+    <div class="card-title">🔧 <<SETUP STEPS TITLE>></div>
+    <h4>1. <<STEP HEADING>></h4>
+    <div class="code-block"><pre>
+<span class="bash-cmd">git clone <i>repository-url</i></span>
+<span class="bash-cmd">cd <i>project</i></span>
+<span class="bash-cmd">python -m venv venv && source venv/bin/activate</span>
+<span class="bash-cmd">pip install -r requirements.txt</span>
+        </pre></div>
+    <h4>2. <<STEP HEADING>></h4>
+    <div class="code-block"><pre>
+<span class="bash-cmd">python -m backend.cli init</span>
+<span class="bash-cmd">python main.py <i>src/target.c</i></span>
+        </pre></div>
+  </div>
+
+  <!-- PRECONDITION STRIP: small labelled cells -->
+  <div class="precond">
+    <div class="pc"><div class="pc-i">🔑</div><div class="pc-t"><<Req 1>></div><div class="pc-d"><<note>></div></div>
+    <div class="pc"><div class="pc-i">🐍</div><div class="pc-t"><<Req 2>></div><div class="pc-d"><<note>></div></div>
+    <div class="pc"><div class="pc-i">🗄️</div><div class="pc-t"><<Req 3>></div><div class="pc-d"><<note>></div></div>
+    <div class="pc"><div class="pc-i">🌿</div><div class="pc-t"><<Req 4>></div><div class="pc-d"><<note>></div></div>
+    <div class="pc"><div class="pc-i">🔧</div><div class="pc-t"><<Req 5>></div><div class="pc-d"><<note>></div></div>
+  </div>
+</div>
+
+<!-- ════════════ 3. ARCHITECTURE ════════════ -->
+<div id="section-architecture" class="section">
+  <div class="section-title">🏗️ 3 · Architecture</div>
+  <div class="section-subtitle"><<ARCHITECTURE SUBTITLE>></div>
+
+  <!-- SVG wrap: paste any hand-drawn diagram SVG here -->
+  <div class="svg-wrap">
+    <svg viewBox="0 0 900 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:'Segoe UI',Arial,sans-serif">
+      <defs>
+        <linearGradient id="gBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2b7fe0"/><stop offset="1" stop-color="#1a6fd4"/></linearGradient>
+        <marker id="arr" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9aa4b2"/></marker>
+      </defs>
+      <rect x="40" y="80" width="200" height="64" rx="8" fill="url(#gBox)"/>
+      <text x="140" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#fff"><<Component A>></text>
+      <line x1="240" y1="112" x2="340" y2="112" stroke="#9aa4b2" stroke-width="2" marker-end="url(#arr)"/>
+      <rect x="340" y="80" width="200" height="64" rx="8" fill="url(#gBox)"/>
+      <text x="440" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#fff"><<Component B>></text>
+      <line x1="540" y1="112" x2="640" y2="112" stroke="#9aa4b2" stroke-width="2" marker-end="url(#arr)"/>
+      <rect x="640" y="80" width="200" height="64" rx="8" fill="url(#gBox)"/>
+      <text x="740" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#fff"><<Component C>></text>
+    </svg>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🧩 <<KEY MODULES TITLE>></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><<Module 1>></div>
+        <ul style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+          <li><<responsibility>></li>
+          <li><<responsibility>></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><<Module 2>></div>
+        <ul style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+          <li><<responsibility>></li>
+          <li><<responsibility>></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><<Module 3>></div>
+        <ul style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+          <li><<responsibility>></li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-title"><<Module 4>></div>
+        <ul style="margin:4px 0 0 18px; font-size:13px; line-height:1.8">
+          <li><<responsibility>></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAIN: pain → root → impact → action narrative -->
+  <div class="chain">
+    <div class="chain-row"><div class="chain-tag ct-pain">PAIN</div><div class="chain-body"><<describe the problem>></div></div>
+    <div class="chain-link">▼</div>
+    <div class="chain-row"><div class="chain-tag ct-root">ROOT</div><div class="chain-body"><<root cause>></div></div>
+    <div class="chain-link">▼</div>
+    <div class="chain-row"><div class="chain-tag ct-impact">IMPACT</div><div class="chain-body"><<business / technical impact>></div></div>
+    <div class="chain-link">▼</div>
+    <div class="chain-row"><div class="chain-tag ct-ai">ACTION</div><div class="chain-body"><<what this system does>></div></div>
+  </div>
+</div>
+
+<!-- ════════════ 4. RESULTS ════════════ -->
+<div id="section-results" class="section">
+  <div class="section-title">📊 4 · Results</div>
+  <div class="section-subtitle"><<RESULTS SUBTITLE>></div>
+
+  <!-- PROGRESS BARS -->
+  <div class="card">
+    <div class="card-title">📈 <<PROGRESS TITLE>></div>
+    <div class="progress-row">
+      <div class="progress-label"><span><<Metric A>></span><span><<87%>></span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:87%;background:var(--green)"></div></div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-label"><span><<Metric B>></span><span><<64%>></span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:64%;background:var(--orange)"></div></div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-label"><span><<Metric C>></span><span><<42%>></span></div>
+      <div class="progress-bar"><div class="progress-fill" style="width:42%;background:var(--red)"></div></div>
+    </div>
+  </div>
+
+  <!-- VERIFY ROWS: claim + source -->
+  <div class="card">
+    <div class="card-title">✅ <<VERIFICATION TITLE>></div>
+    <div class="verify-row">
+      <div class="verify-icon">✅</div>
+      <div class="verify-body">
+        <div class="verify-claim"><<claim that was verified>></div>
+        <div class="verify-source"><<evidence: file:line or command>></div>
+      </div>
+    </div>
+    <div class="verify-row">
+      <div class="verify-icon">⚠️</div>
+      <div class="verify-body">
+        <div class="verify-claim"><<claim with a caveat>></div>
+        <div class="verify-source"><<evidence>></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPARE: before / after -->
+  <div class="compare">
+    <div class="compare-box compare-bad">
+      <div class="compare-label">Before</div>
+      <p><<describe the state before>></p>
+    </div>
+    <div class="compare-box compare-good">
+      <div class="compare-label">After</div>
+      <p><<describe the state after>></p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ 5. APPENDIX ════════════ -->
+<div id="section-appendix" class="section">
+  <div class="section-title">📄 5 · Appendix</div>
+  <div class="section-subtitle"><<APPENDIX SUBTITLE>></div>
+
+  <div class="card">
+    <div class="card-title">📁 <<PROJECT STRUCTURE TITLE>></div>
+    <div class="code-block"><pre>
+<<project>/
+├── src/
+├── backend/
+├── frontend/
+├── tests/
+└── README.md
+    </pre></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 <<REFERENCES TITLE>></div>
+    <table>
+      <tr><th><<Item>></th><th><<Link / Path>></th></tr>
+      <tr><td><<doc 1>></td><td><<path or url>></td></tr>
+      <tr><td><<doc 2>></td><td><<path or url>></td></tr>
+    </table>
+  </div>
+</div>
+
+</main>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const el = document.getElementById('section-' + id);
+  if (el) el.classList.add('active');
+  const nav = document.querySelector(`[onclick="show('${id}')"]`);
+  if (nav) nav.classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

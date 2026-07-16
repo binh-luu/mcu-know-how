@@ -1,0 +1,16 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^cd /home/binhlv/Downloads/aiae1/misrac-checker && python3 - <<'PY'\nfrom pathlib import Path\nline = Path\\('src/example\\.c'\\)\\.read_text\\(\\)\\.splitlines\\(\\)\\[44\\]\nprint\\(repr\\(line\\)\\)\nprint\\(len\\(line\\), line\\.encode\\(\\)\\)\nPY$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd /home/binhlv/Downloads/aiae1/misrac-checker && python3 - <<'PY'\nfrom pathlib import Path\nimport subprocess\npatch = '''--- src/example\\.c\n\\+\\+\\+ src/example\\.c\n@@ -45 \\+45 @@\n-    deltaIn = \\(sint32\\)\\(pTableData\\[idx\\]\\.temperature\\) - \\(sint32\\)\\(pTableData\\[idx-1\\]\\.temperature\\);\n\\+    deltaIn = \\(sint32\\)\\(\\(sint16\\)\\(pTableData\\[idx\\]\\.temperature\\) - \\(sint16\\)\\(pTableData\\[idx-1\\]\\.temperature\\)\\);\n'''\nPath\\('/tmp/test\\.patch'\\)\\.write_text\\(patch\\)\nres = subprocess\\.run\\(\\['git','apply','-p0','--verbose','--check','/tmp/test\\.patch'\\], capture_output=True, text=True\\)\nprint\\(res\\.stdout\\)\nprint\\(res\\.stderr\\)\nPY$/": {
+            "approve": true,
+            "matchCommandLine": true
+        },
+        "/^cd /home/binhlv/Downloads/aiae1/misrac-checker && source venv/bin/activate && python -m backend\\.cli analyze --output results\\.json --patch-dir \\./patches && patch --dry-run -p0 < \\./patches/rule_10\\.4\\.patch$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
