@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MISRA-C:2012 AI Fixing Assistant — GROUP 3</title>
+<title>MISRA-C:2012 AI Assistant</title>
 <style>
 :root {
     --sidebar-w: 260px;
@@ -277,9 +277,8 @@
 <!-- ════════════ SIDEBAR ════════════ -->
 <nav id="sidebar">
   <div id="sidebar-header">
-    <div class="project">MISRA-C:2012 AI FIXING ASSISTANT</div>
+    <div class="project">MISRA-C:2012 AI ASSISTANT</div>
     <div class="title">Group 3</div>
-    <div class="meta">RAG + LLM + Static Analysis</div>
   </div>
 
   <nav>
@@ -386,7 +385,7 @@
 <!-- ════════════ 2. SOLUTION OVERVIEW ════════════ -->
 <div id="section-solution" class="section">
   <div class="section-title">💡 2 · Solution Overview</div>
-  <div class="section-subtitle">MISRA-C:2012 AI Fixing Assistant — End-to-end automated violation fixing with RAG-enhanced LLM</div>
+  <div class="section-subtitle">MISRA-C:2012 AI Assistant — End-to-end automated violation fixing with RAG-enhanced LLM</div>
 
   <div class="alert alert-green">
     <div class="alert-icon">🏗️</div>
@@ -435,7 +434,7 @@
         <tr><td>Orchestration</td><td>LangChain + LangGraph</td></tr>
         <tr><td>Embeddings</td><td>OpenAI embedding model (ex: text-embedding-3-small)</td></tr>
         <tr><td>Vector DB</td><td>ChromaDB (local, persistent, cosine similarity)</td></tr>
-        <tr><td>Static Analysis</td><td>cppcheck + custom misra.py</td></tr>
+        <tr><td>Static Analysis</td><td>cppcheck + addon misra.py</td></tr>
         <tr><td>UI</td><td>Streamlit (workflow, RAG explorer, source browser)</td></tr>
         <tr><td>Testing</td><td>pytest (multiple tests)</td></tr>
       </table>
@@ -623,17 +622,11 @@
 # Copy example env file
 <span class="bash-cmd">cp .env.example .env</span>
 
-# Edit .env and add your OpenAI API key
-# Required:
-OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
-# Optional (defaults shown):
-OPENAI_MODEL=gpt-4o
-OPENAI_EMBEDDING_MODEL=text-embedding-ada-002
-CHROMA_PERSIST_DIR=./chroma_db
-CHROMA_COLLECTION_NAME=misra_c_2012_rules
-SRC_DIR=./src
-REPORT_DIR=./report
-EXAMPLE_SUITE_DIR=./Example-Suite-master
+# Edit .env and add your OpenAI API key. Required:
+OPENAI_LLM_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+OPENAI_LLM_API_ENDPOINT=https://your-llm-api-endpoint
+OPENAI_EMBEDDING_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxx
+OPENAI_EMBEDDING_ENDPOINT=https://your-embedding-api-endpoint
         </div>
 
     <h4>3. Initialize Vector Database</h4>
